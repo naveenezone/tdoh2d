@@ -7,6 +7,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+@CrossOrigin(origins="http://localhost:4200")
 @RestController
 public class TodoResource {
 
@@ -38,9 +40,11 @@ public class TodoResource {
 
 	// DELETE /users/{username}/todos/{id}
 	@DeleteMapping("/users/{username}/todos/{id}")
-	public ResponseEntity<Void> deleteTodo(@PathVariable String username, @PathVariable long id) {
-		todoRepository.deleteById(id);
-		return ResponseEntity.noContent().build();
+	public ResponseEntity<Todo> deleteTodo(@PathVariable String username, @PathVariable long id) {
+		Todo todoSelected = todoRepository.findById(id).get();
+				todoRepository.deleteById(id);
+//		return ResponseEntity.noContent().build();
+				return new ResponseEntity<Todo>(todoSelected, HttpStatus.OK);
 	}
 
 	// PUT /users/{username}/todos/{id}
@@ -54,9 +58,9 @@ public class TodoResource {
 	// POST /users/{username}/todos
 	@PostMapping("/users/{username}/todos")
 	public ResponseEntity<Todo> createTodo(@PathVariable String username, @RequestBody Todo todo) {
+		 todo.setUsername(username);
 		Todo todoCreated = todoRepository.save(todo);
-		URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(todoCreated.getId())
-				.toUri();
+		URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(todoCreated.getId()).toUri(); 
 		return ResponseEntity.created(uri).build();
 	}
 
